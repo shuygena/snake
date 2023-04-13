@@ -1,5 +1,6 @@
 # import os
 from sys import exit
+from random import randint
 from pygame import display, event, QUIT, quit, draw, time, KEYDOWN, K_DOWN, K_UP, K_LEFT, K_RIGHT
 from snake.snake import SnakeBlock
 # os.environ["SDL_VIDEODRIVER"] = "dummy" for Linux
@@ -12,12 +13,22 @@ FRAME_COLOR = (223, 223, 223)
 # HEADER_COLOR = (171, 171, 212)
 HEADER_COLOR = (190, 190, 212)
 SNAKE_COLOR = (5, 115, 82)
-APPLE_COLOR = (180, 1, 1)
+RED = (180, 1, 1)
 COUNT_BLOCKS = 20
 MARGIN = 1
 HEAD_MARGIN = 70
 size = [SIZE_BLOCK * (COUNT_BLOCKS + 2) + MARGIN * COUNT_BLOCKS,
         SIZE_BLOCK * (COUNT_BLOCKS + 2) + MARGIN * COUNT_BLOCKS + HEAD_MARGIN]
+
+
+def get_random_empty_block(snake_blocks):
+    x = randint(0, COUNT_BLOCKS - 1)
+    y = randint(0, COUNT_BLOCKS - 1)
+    empty_block = SnakeBlock(x, y)
+    while empty_block in snake_blocks:
+        empty_block._x = randint(0, COUNT_BLOCKS - 1)
+        empty_block._y = randint(0, COUNT_BLOCKS - 1)
+    return empty_block
 
 
 def draw_block(screen, color, row, column):
@@ -39,7 +50,7 @@ def move_snake(screen, snake_blocks, d_row, d_col):
     snake_blocks.pop(0)
 
 
-def draw_field(screen, snake_blocks, d_row, d_col):
+def draw_field(screen, snake_blocks, d_row, d_col, apple):
     draw.rect(screen, HEADER_COLOR, [0, 0, size[0], HEAD_MARGIN])
     for row in range(COUNT_BLOCKS):
         for column in range(COUNT_BLOCKS):
@@ -48,11 +59,14 @@ def draw_field(screen, snake_blocks, d_row, d_col):
             else:
                 color = GHOSTLY_WHITE
             draw_block(screen, color, row, column)
-    if not snake_blocks[-1].is_inside(SIZE_BLOCK):
+    head = snake_blocks[-1]
+    if not head.is_inside(SIZE_BLOCK):
         quit()
         exit()
+    draw_block(screen, RED, apple.get_x(), apple.get_y())
     for block in snake_blocks:
         draw_snake(screen, block)
+
     move_snake(screen, snake_blocks, d_row, d_col)
 
 
@@ -64,6 +78,7 @@ def game_loop():
     d_row = 0
     d_col = 1
     snake_blocks = [SnakeBlock(9, 8), SnakeBlock(9, 9), SnakeBlock(9, 10)]
+    apple = get_random_empty_block(snake_blocks)
     while True:
         # d_col = 0
         # d_row = 0
@@ -84,11 +99,12 @@ def game_loop():
                 elif ev.key == K_LEFT and d_row != 0:
                     d_row = 0
                     d_col = -1
-        draw_field(screen, snake_blocks, d_row, d_col)
+        if apple == snake_blocks[-1]:
+            apple = get_random_empty_block(snake_blocks)
+        draw_field(screen, snake_blocks, d_row, d_col, apple)
         display.flip()
         timer.tick(2)
-        # timer = time.Clock()
-        
+
 
 if __name__ == '__main__':
     game_loop()
