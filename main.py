@@ -1,12 +1,13 @@
 # import os
 from sys import exit
 from random import randint
-from pygame import display, event, QUIT, quit, draw, time, KEYDOWN, K_DOWN, K_UP, K_LEFT, K_RIGHT
+from pygame import display, event, QUIT, quit, draw, time, KEYDOWN, K_DOWN, K_UP, K_LEFT, K_RIGHT, font, init
 from snake.snake import SnakeBlock
 # os.environ["SDL_VIDEODRIVER"] = "dummy" for Linux
 # os.environ["SDL_VIDEODRIVER"]="x11" # for WSL
 
 SIZE_BLOCK = 20
+WHITE = (255, 255, 255)
 LIGHT_MALLOW = (223, 223, 255)
 GHOSTLY_WHITE = (245, 245, 255)
 FRAME_COLOR = (223, 223, 223)
@@ -43,6 +44,14 @@ def draw_snake(screen, snake):
     draw_block(screen, SNAKE_COLOR, x, y)
 
 
+def draw_header(screen, score, speed):
+    courier = font.SysFont('courier', 42)
+    text_score = courier.render(f"Score: {score}", 0, WHITE)
+    screen.blit(text_score, (SIZE_BLOCK, SIZE_BLOCK))
+    text_speed = courier.render(f"Speed: {speed}", 0, WHITE)
+    screen.blit(text_speed, (SIZE_BLOCK + 230, SIZE_BLOCK))
+
+
 def move_snake(screen, snake_blocks, d_row, d_col):
     head = snake_blocks[-1]
     new_head = SnakeBlock(head.get_x() + d_row, head.get_y() + d_col)
@@ -71,12 +80,15 @@ def draw_field(screen, snake_blocks, d_row, d_col, apple):
 
 
 def game_loop():
+    init()
     timer = time.Clock()
     screen = display.set_mode(size)
     screen.fill(FRAME_COLOR)
     display.set_caption("Змейка")
     d_row = 0
     d_col = 1
+    score = 0
+    speed = 1
     snake_blocks = [SnakeBlock(9, 8), SnakeBlock(9, 9), SnakeBlock(9, 10)]
     apple = get_random_empty_block(snake_blocks)
     while True:
@@ -100,10 +112,14 @@ def game_loop():
                     d_row = 0
                     d_col = -1
         if apple == snake_blocks[-1]:
+            score += 1
+            speed = score // 5 + 1
+            snake_blocks.append(apple)
             apple = get_random_empty_block(snake_blocks)
         draw_field(screen, snake_blocks, d_row, d_col, apple)
+        draw_header(screen, score, speed)
         display.flip()
-        timer.tick(2)
+        timer.tick(2 + speed)
 
 
 if __name__ == '__main__':
