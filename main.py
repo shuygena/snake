@@ -55,6 +55,9 @@ def draw_header(screen, score, speed):
 def move_snake(screen, snake_blocks, d_row, d_col):
     head = snake_blocks[-1]
     new_head = SnakeBlock(head.get_x() + d_row, head.get_y() + d_col)
+    if new_head in snake_blocks:
+        quit()
+        exit()
     snake_blocks.append(new_head)
     snake_blocks.pop(0)
 
@@ -75,7 +78,6 @@ def draw_field(screen, snake_blocks, d_row, d_col, apple):
     draw_block(screen, RED, apple.get_x(), apple.get_y())
     for block in snake_blocks:
         draw_snake(screen, block)
-
     move_snake(screen, snake_blocks, d_row, d_col)
 
 
@@ -89,6 +91,8 @@ def game_loop():
     d_col = 1
     score = 0
     speed = 1
+    buf_row = 0
+    buf_col = 1
     snake_blocks = [SnakeBlock(9, 8), SnakeBlock(9, 9), SnakeBlock(9, 10)]
     apple = get_random_empty_block(snake_blocks)
     while True:
@@ -100,22 +104,24 @@ def game_loop():
                 exit()
             elif ev.type == KEYDOWN:
                 if ev.key == K_UP and d_col != 0:
-                    d_row = -1
-                    d_col = 0
+                    buf_row = -1
+                    buf_col = 0
                 elif ev.key == K_DOWN and d_col != 0:
-                    d_row = 1
-                    d_col = 0
+                    buf_row = 1
+                    buf_col = 0
                 elif ev.key == K_RIGHT and d_row != 0:
-                    d_row = 0
-                    d_col = 1
+                    buf_row = 0
+                    buf_col = 1
                 elif ev.key == K_LEFT and d_row != 0:
-                    d_row = 0
-                    d_col = -1
+                    buf_row = 0
+                    buf_col = -1
         if apple == snake_blocks[-1]:
             score += 1
             speed = score // 5 + 1
             snake_blocks.append(apple)
             apple = get_random_empty_block(snake_blocks)
+        d_row = buf_row
+        d_col = buf_col
         draw_field(screen, snake_blocks, d_row, d_col, apple)
         draw_header(screen, score, speed)
         display.flip()
