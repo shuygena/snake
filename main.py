@@ -1,4 +1,5 @@
 # import os
+import pygame_menu
 from sys import exit
 from random import randint
 from pygame import display, event, QUIT, quit, draw, time, KEYDOWN, K_DOWN, K_UP, K_LEFT, K_RIGHT, font, init
@@ -56,8 +57,7 @@ def move_snake(screen, snake_blocks, d_row, d_col):
     head = snake_blocks[-1]
     new_head = SnakeBlock(head.get_x() + d_row, head.get_y() + d_col)
     if new_head in snake_blocks:
-        quit()
-        exit()
+        return 'quit'
     snake_blocks.append(new_head)
     snake_blocks.pop(0)
 
@@ -73,20 +73,16 @@ def draw_field(screen, snake_blocks, d_row, d_col, apple):
             draw_block(screen, color, row, column)
     head = snake_blocks[-1]
     if not head.is_inside(SIZE_BLOCK):
-        quit()
-        exit()
+        return 'quit'
     draw_block(screen, RED, apple.get_x(), apple.get_y())
     for block in snake_blocks:
         draw_snake(screen, block)
-    move_snake(screen, snake_blocks, d_row, d_col)
+    if move_snake(screen, snake_blocks, d_row, d_col) == 'quit':
+        return 'quit'
 
 
-def game_loop():
-    init()
-    timer = time.Clock()
-    screen = display.set_mode(size)
-    screen.fill(FRAME_COLOR)
-    display.set_caption("Змейка")
+def start_the_game(screen, timer):
+    # Do the job here !
     d_row = 0
     d_col = 1
     score = 0
@@ -122,11 +118,28 @@ def game_loop():
             apple = get_random_empty_block(snake_blocks)
         d_row = buf_row
         d_col = buf_col
-        draw_field(screen, snake_blocks, d_row, d_col, apple)
+        if draw_field(screen, snake_blocks, d_row, d_col, apple) == 'quit':
+            break
         draw_header(screen, score, speed)
         display.flip()
         timer.tick(2 + speed)
 
+def game_loop():
+    init()
+    timer = time.Clock()
+    screen = display.set_mode(size)
+    screen.fill(FRAME_COLOR)
+    display.set_caption("Змейка")
+    menu = pygame_menu.Menu('Welcome', 400, 300,
+                       theme=pygame_menu.themes.THEME_BLUE)
+
+    menu.add.text_input('Name :', default='Зухра')
+    menu.add.button('Play', start_the_game(screen, timer))
+    menu.add.button('Quit', pygame_menu.events.EXIT)
+    menu.mainloop(screen)
+
+
 
 if __name__ == '__main__':
     game_loop()
+    
